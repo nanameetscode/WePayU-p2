@@ -13,15 +13,24 @@ import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoExisteException;
 import br.ufal.ic.p2.wepayu.Exception.EnderecoNuloException;
 import br.ufal.ic.p2.wepayu.Exception.HorasDevemSerPositivasException;
 import br.ufal.ic.p2.wepayu.Exception.IdentificacaoEmpregadoNulaException;
+import br.ufal.ic.p2.wepayu.Exception.IdentificacaoMembroNulaException;
+import br.ufal.ic.p2.wepayu.Exception.MembroNaoExisteException;
 import br.ufal.ic.p2.wepayu.Exception.NaoHaEmpregadoComEsseNomeException;
 import br.ufal.ic.p2.wepayu.Exception.NomeNuloException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNaoNumericoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNegativoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNuloException;
 import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException;
+import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhSindicalizadoException;
+import br.ufal.ic.p2.wepayu.Exception.IdentificacaoSindicatoDuplicadaException;
+import br.ufal.ic.p2.wepayu.Exception.IdentificacaoSindicatoNulaException;
+import br.ufal.ic.p2.wepayu.Exception.TaxaSindicalNaoNumericaException;
+import br.ufal.ic.p2.wepayu.Exception.TaxaSindicalNegativaException;
+import br.ufal.ic.p2.wepayu.Exception.TaxaSindicalNulaException;
 import br.ufal.ic.p2.wepayu.Exception.TipoInvalidoException;
 import br.ufal.ic.p2.wepayu.Exception.TipoNaoAplicavelException;
 import br.ufal.ic.p2.wepayu.Exception.ValorDeveSerPositivoException;
+import br.ufal.ic.p2.wepayu.Exception.ValorTrueFalseException;
 import br.ufal.ic.p2.wepayu.models.Empregado;
 import br.ufal.ic.p2.wepayu.models.TipoEmpregado;
 import br.ufal.ic.p2.wepayu.utils.Formatador;
@@ -196,6 +205,108 @@ public class EmpregadoService {
         LocalDate[] periodo = validarPeriodo(dataInicial, dataFinal);
         double total = empregado.getVendasRealizadas(periodo[0], periodo[1]);
         return Formatador.formatarMoeda(total);
+    }
+
+    public void lancaTaxaServico(String membro, String data, String valor)
+            throws IdentificacaoMembroNulaException, MembroNaoExisteException,
+            DataInvalidaException, ValorDeveSerPositivoException {
+
+        if (membro == null || membro.isBlank()) {
+            throw new IdentificacaoMembroNulaException();
+        }
+
+        Empregado empregado = null;
+        for (Empregado e : empregados.values()) {
+            if (e.isSindicalizado() && membro.equals(e.getIdSindicato())) {
+                empregado = e;
+                break;
+            }
+        }
+        if (empregado == null) {
+            throw new MembroNaoExisteException();
+        }
+
+        LocalDate dataConvertida = Formatador.converterData(data);
+        if (dataConvertida == null) {
+            throw new DataInvalidaException();
+        }
+
+        Double valorConvertido = Formatador.converterNumero(valor);
+        if (valorConvertido == null || valorConvertido <= 0) {
+            throw new ValorDeveSerPositivoException();
+        }
+
+        empregado.lancarTaxaServico(data, valorConvertido);
+    }
+
+    public String getTaxasServico(String emp, String dataInicial, String dataFinal)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhSindicalizadoException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosteriorDataFinalException {
+
+        Empregado empregado = buscar(emp);
+        if (!empregado.isSindicalizado()) {
+            throw new EmpregadoNaoEhSindicalizadoException();
+        }
+        LocalDate[] periodo = validarPeriodo(dataInicial, dataFinal);
+        double total = empregado.getTaxasServico(periodo[0], periodo[1]);
+        return Formatador.formatarMoeda(total);
+    }
+
+    public void alteraEmpregado(String emp, String atributo, String valor)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            AtributoNaoExisteException, ValorTrueFalseException, IdentificacaoSindicatoNulaException {
+
+        Empregado empregado = buscar(emp);
+        if ("sindicalizado".equals(atributo)) {
+            if ("false".equals(valor)) {
+                empregado.setDadosSindicato(false, null, 0.0);
+            } else if ("true".equals(valor)) {
+                throw new IdentificacaoSindicatoNulaException();
+            } else {
+                throw new ValorTrueFalseException();
+            }
+        } else {
+            throw new AtributoNaoExisteException();
+        }
+    }
+
+    public void alteraEmpregado(String emp, String atributo, String valor, String idSindicato, String taxaSindical)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            AtributoNaoExisteException, ValorTrueFalseException,
+            IdentificacaoSindicatoNulaException, IdentificacaoSindicatoDuplicadaException,
+            TaxaSindicalNulaException, TaxaSindicalNaoNumericaException, TaxaSindicalNegativaException {
+
+        Empregado empregado = buscar(emp);
+        if (!"sindicalizado".equals(atributo)) {
+            throw new AtributoNaoExisteException();
+        }
+        if (!"true".equals(valor) && !"false".equals(valor)) {
+            throw new ValorTrueFalseException();
+        }
+        if ("false".equals(valor)) {
+            empregado.setDadosSindicato(false, null, 0.0);
+            return;
+        }
+        if (idSindicato == null || idSindicato.isBlank()) {
+            throw new IdentificacaoSindicatoNulaException();
+        }
+        for (Map.Entry<String, Empregado> entry : empregados.entrySet()) {
+            if (!entry.getKey().equals(emp) && entry.getValue().isSindicalizado() && idSindicato.equals(entry.getValue().getIdSindicato())) {
+                throw new IdentificacaoSindicatoDuplicadaException();
+            }
+        }
+        if (taxaSindical == null || taxaSindical.isBlank()) {
+            throw new TaxaSindicalNulaException();
+        }
+        Double taxa = Formatador.converterNumero(taxaSindical);
+        if (taxa == null) {
+            throw new TaxaSindicalNaoNumericaException();
+        }
+        if (taxa < 0) {
+            throw new TaxaSindicalNegativaException();
+        }
+        empregado.setDadosSindicato(true, idSindicato, taxa);
     }
 
     public void zerarSistema() {

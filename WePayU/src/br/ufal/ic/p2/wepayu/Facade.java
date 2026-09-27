@@ -13,15 +13,24 @@ import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoExisteException;
 import br.ufal.ic.p2.wepayu.Exception.EnderecoNuloException;
 import br.ufal.ic.p2.wepayu.Exception.HorasDevemSerPositivasException;
 import br.ufal.ic.p2.wepayu.Exception.IdentificacaoEmpregadoNulaException;
+import br.ufal.ic.p2.wepayu.Exception.IdentificacaoMembroNulaException;
+import br.ufal.ic.p2.wepayu.Exception.MembroNaoExisteException;
 import br.ufal.ic.p2.wepayu.Exception.NaoHaEmpregadoComEsseNomeException;
 import br.ufal.ic.p2.wepayu.Exception.NomeNuloException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNaoNumericoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNegativoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNuloException;
 import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException;
+import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhSindicalizadoException;
+import br.ufal.ic.p2.wepayu.Exception.IdentificacaoSindicatoDuplicadaException;
+import br.ufal.ic.p2.wepayu.Exception.IdentificacaoSindicatoNulaException;
+import br.ufal.ic.p2.wepayu.Exception.TaxaSindicalNaoNumericaException;
+import br.ufal.ic.p2.wepayu.Exception.TaxaSindicalNegativaException;
+import br.ufal.ic.p2.wepayu.Exception.TaxaSindicalNulaException;
 import br.ufal.ic.p2.wepayu.Exception.TipoInvalidoException;
 import br.ufal.ic.p2.wepayu.Exception.TipoNaoAplicavelException;
 import br.ufal.ic.p2.wepayu.Exception.ValorDeveSerPositivoException;
+import br.ufal.ic.p2.wepayu.Exception.ValorTrueFalseException;
 import br.ufal.ic.p2.wepayu.models.Empregado;
 import br.ufal.ic.p2.wepayu.persistence.RepositorioXML;
 import br.ufal.ic.p2.wepayu.services.EmpregadoService;
@@ -107,6 +116,33 @@ public class Facade {
             EmpregadoNaoEhComissionadoException, DataInicialInvalidaException, DataFinalInvalidaException,
             DataInicialPosteriorDataFinalException {
         return empregados.getVendasRealizadas(emp, dataInicial, dataFinal);
+    }
+
+    public void lancaTaxaServico(String membro, String data, String valor)
+            throws IdentificacaoMembroNulaException, MembroNaoExisteException,
+            DataInvalidaException, ValorDeveSerPositivoException {
+        empregados.lancaTaxaServico(membro, data, valor);
+    }
+
+    public String getTaxasServico(String emp, String dataInicial, String dataFinal)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhSindicalizadoException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosteriorDataFinalException {
+        return empregados.getTaxasServico(emp, dataInicial, dataFinal);
+    }
+
+    public void alteraEmpregado(String emp, String atributo, String valor)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            AtributoNaoExisteException, ValorTrueFalseException, IdentificacaoSindicatoNulaException {
+        empregados.alteraEmpregado(emp, atributo, valor);
+    }
+
+    public void alteraEmpregado(String emp, String atributo, String valor, String idSindicato, String taxaSindical)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            AtributoNaoExisteException, ValorTrueFalseException,
+            IdentificacaoSindicatoNulaException, IdentificacaoSindicatoDuplicadaException,
+            TaxaSindicalNulaException, TaxaSindicalNaoNumericaException, TaxaSindicalNegativaException {
+        empregados.alteraEmpregado(emp, atributo, valor, idSindicato, taxaSindical);
     }
 
     public void zerarSistema() throws IOException {

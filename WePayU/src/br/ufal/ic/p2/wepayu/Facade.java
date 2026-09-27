@@ -4,8 +4,14 @@ import br.ufal.ic.p2.wepayu.Exception.AtributoNaoExisteException;
 import br.ufal.ic.p2.wepayu.Exception.ComissaoNaoNumericaException;
 import br.ufal.ic.p2.wepayu.Exception.ComissaoNegativaException;
 import br.ufal.ic.p2.wepayu.Exception.ComissaoNulaException;
+import br.ufal.ic.p2.wepayu.Exception.DataFinalInvalidaException;
+import br.ufal.ic.p2.wepayu.Exception.DataInicialInvalidaException;
+import br.ufal.ic.p2.wepayu.Exception.DataInicialPosteriorDataFinalException;
+import br.ufal.ic.p2.wepayu.Exception.DataInvalidaException;
+import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhHoristaException;
 import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoExisteException;
 import br.ufal.ic.p2.wepayu.Exception.EnderecoNuloException;
+import br.ufal.ic.p2.wepayu.Exception.HorasDevemSerPositivasException;
 import br.ufal.ic.p2.wepayu.Exception.IdentificacaoEmpregadoNulaException;
 import br.ufal.ic.p2.wepayu.Exception.NaoHaEmpregadoComEsseNomeException;
 import br.ufal.ic.p2.wepayu.Exception.NomeNuloException;
@@ -21,50 +27,19 @@ import br.ufal.ic.p2.wepayu.services.EmpregadoService;
 import java.io.IOException;
 
 /**
- * Ponto de entrada único do sistema, invocado por reflexão pelo EasyAccept.
- *
- * <p>Esta classe é a <strong>fachada</strong> do sistema: não contém regra de
- * negócio, apenas traduz o texto dos scripts em chamadas de serviço e delega o
- * trabalho. Nenhum outro ponto do sistema é alcançado pelos testes.
- *
- * <p><strong>Contrato com o EasyAccept.</strong> O framework localiza os métodos
- * públicos desta classe pelo nome e pela quantidade de parâmetros, e passa os
- * argumentos <em>por posição</em>, na ordem em que aparecem no script. Por isso:
- * <ul>
- *   <li>todo parâmetro é declarado como {@code String}, exceto o índice de
- *       {@code getEmpregadoPorNome}, que é {@code int};</li>
- *   <li>existem duas sobrecargas de {@code criarEmpregado}, porque o script
- *       informa comissão apenas para o comissionado;</li>
- *   <li>o valor devolvido é comparado pelo {@code toString()}, de modo que os
- *       atributos numéricos já saem formatados em
- *       {@link br.ufal.ic.p2.wepayu.utils.Formatador}.</li>
- * </ul>
- *
- * <p>A fachada precisa de construtor sem argumentos, pois o EasyAccept a instancia
- * por reflexão. É nele que o cadastro é recuperado do arquivo XML, o que permite
- * a um script continuar o estado deixado pelo script anterior.
+ * Ponto de entrada unico do sistema, invocado por reflexao pelo EasyAccept.
  */
 public class Facade {
 
-    private final RepositorioXML repositorio;
-    private final EmpregadoService empregados;
+    private final RepositorioXML repositorio = new RepositorioXML();
+    private final EmpregadoService empregados = new EmpregadoService();
 
-    /**
-     * Cria a fachada e recupera o cadastro gravado na execução anterior.
-     */
     public Facade() {
-        this.repositorio = new RepositorioXML();
-        this.repositorio.carregar();
-        this.empregados = new EmpregadoService();
-        this.empregados.getEmpregados().putAll(repositorio.getEmpregados());
-        this.empregados.restaurarUltimoId(maiorIdentificacao());
+        repositorio.carregar();
+        empregados.getEmpregados().putAll(repositorio.getEmpregados());
+        empregados.restaurarUltimoId(maiorIdentificacao());
     }
 
-    /**
-     * Cadastra um empregado que não recebe comissão.
-     *
-     * @return a identificação do empregado, escolhida automaticamente pelo sistema
-     */
     public String criarEmpregado(String nome, String endereco, String tipo, String salario)
             throws NomeNuloException, EnderecoNuloException, TipoInvalidoException,
             SalarioNuloException, SalarioNaoNumericoException, SalarioNegativoException,
@@ -74,11 +49,6 @@ public class Facade {
         return empregados.criarEmpregado(nome, endereco, tipo, salario);
     }
 
-    /**
-     * Cadastra um empregado, com comissão ou sem ela.
-     *
-     * @return a identificação do empregado, escolhida automaticamente pelo sistema
-     */
     public String criarEmpregado(String nome, String endereco, String tipo, String salario, String comissao)
             throws NomeNuloException, EnderecoNuloException, TipoInvalidoException,
             SalarioNuloException, SalarioNaoNumericoException, SalarioNegativoException,
@@ -88,11 +58,6 @@ public class Facade {
         return empregados.criarEmpregado(nome, endereco, tipo, salario, comissao);
     }
 
-    /**
-     * Recupera um atributo do empregado.
-     *
-     * @return o valor do atributo, já formatado
-     */
     public String getAtributoEmpregado(String emp, String atributo)
             throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
             AtributoNaoExisteException {
@@ -100,37 +65,40 @@ public class Facade {
         return empregados.getAtributoEmpregado(emp, atributo);
     }
 
-    /**
-     * Localiza um empregado pelo nome e pela posição da ocorrência.
-     *
-     * @param indice posição da ocorrência, começando em 1
-     * @return a identificação do empregado encontrado
-     */
     public String getEmpregadoPorNome(String nome, int indice) throws NaoHaEmpregadoComEsseNomeException {
         return empregados.getEmpregadoPorNome(nome, indice);
     }
 
-    /**
-     * Remove um empregado do sistema pela sua identificação.
-     *
-     * @param emp identificação do empregado a remover
-     */
     public void removerEmpregado(String emp)
             throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException {
         empregados.removerEmpregado(emp);
     }
 
-    /**
-     * Descarta o cadastro atual e apaga o arquivo de persistência.
-     */
+    public void lancaCartao(String emp, String data, String horas)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhHoristaException, DataInvalidaException, HorasDevemSerPositivasException {
+        empregados.lancaCartao(emp, data, horas);
+    }
+
+    public String getHorasNormaisTrabalhadas(String emp, String dataInicial, String dataFinal)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhHoristaException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosteriorDataFinalException {
+        return empregados.getHorasNormaisTrabalhadas(emp, dataInicial, dataFinal);
+    }
+
+    public String getHorasExtrasTrabalhadas(String emp, String dataInicial, String dataFinal)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhHoristaException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosteriorDataFinalException {
+        return empregados.getHorasExtrasTrabalhadas(emp, dataInicial, dataFinal);
+    }
+
     public void zerarSistema() throws IOException {
         empregados.zerarSistema();
         repositorio.limpar();
     }
 
-    /**
-     * Grava o cadastro atual em arquivo para a próxima execução.
-     */
     public void encerrarSistema() throws IOException {
         repositorio.getEmpregados().clear();
         repositorio.getEmpregados().putAll(empregados.getEmpregados());
@@ -143,7 +111,6 @@ public class Facade {
             try {
                 maior = Math.max(maior, Integer.parseInt(identificacao));
             } catch (NumberFormatException ignorada) {
-                // Identificação fora do padrão numérico não altera a numeração.
             }
         }
         return maior;

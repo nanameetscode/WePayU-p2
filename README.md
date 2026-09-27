@@ -9,7 +9,7 @@ Projeto acadêmico desenvolvido para a disciplina de **Programação 2 (P2) / Pr
 
 ---
 
-## 📑 Sumário
+## Sumário
 
 - [1. Visão Geral do Sistema](#1-visão-geral-do-sistema)
 - [2. Arquitetura e Padrões de Projeto (GoF)](#2-arquitetura-e-padrões-de-projeto-gof)
@@ -59,23 +59,23 @@ flowchart TD
 
     subgraph Domain_Layer ["Camada de Domínio e Polimorfismo"]
         direction TB
-        E["<<abstract>>\nEmpregado"]
+        E["Empregado (Abstrato)"]
         EH["EmpregadoHorista"]
         EA_Model["EmpregadoAssalariado"]
         EC["EmpregadoComissionado"]
 
-        MP["<<interface>>\nMetodoPagamento"]
+        MP["MetodoPagamento (Interface)"]
         MP_B["DepositoBanco"]
         MP_M["EmMaos"]
         MP_C["Correios"]
 
-        E <|-- EH
-        E <|-- EA_Model
-        E <|-- EC
+        E --> EH
+        E --> EA_Model
+        E --> EC
         E --> MP
-        MP <|.. MP_B
-        MP <|.. MP_M
-        MP <|.. MP_C
+        MP -.-> MP_B
+        MP -.-> MP_M
+        MP -.-> MP_C
     end
 
     subgraph Persistence_Layer ["Camada de Persistência"]
@@ -133,11 +133,11 @@ flowchart TD
 
 | Regra | Diretriz de Implementação | Motivação Teórica (POO / Clean Code) |
 |---|---|---|
-| **🚫 Proibido o uso de `instanceof`** | O operador `instanceof` e checagens por reflexão (`getClass() == ...`) são **terminantemente proibidos**. | Viola o polimorfismo e o princípio Aberto/Fechado (OCP). A variação de comportamento deve ser disparada por dispatch polimórfico dinâmico. |
-| **🚫 Proibido lançar Exceções Genéricas** | Proibido o uso de `throw new Exception()` ou `throw new RuntimeException()`. | Toda condição excepcional de negócio deve possuir sua classe de exceção personalizada, contendo a mensagem canônica exata requerida pelo EasyAccept. |
-| **♻️ Princípio DRY (Don't Repeat Yourself)** | Proibido repetir blocos de código redundantes. | Lógicas de validação de datas, strings nulas/vazias e cálculos recorrentes devem ser extraídas para utilitários ou métodos abstratos comuns. |
-| **🧬 Herança Semântica Correta** | Subclasses devem realmente estender características conceituais da superclasse. | Evita subclasses impuras ou herança por conveniência; assegura o cumprimento do princípio de Liskov (LSP). |
-| **⚡ Polimorfismo Máximo** | Delegação de comportamentos variantes aos próprios objetos responsáveis. | Substitui estruturas de decisão em cascata (`switch/case`, `if/else` encadeados sobre tipos de empregados). |
+| **Proibido o uso de `instanceof`** | O operador `instanceof` e checagens por reflexão (`getClass() == ...`) são **terminantemente proibidos**. | Viola o polimorfismo e o princípio Aberto/Fechado (OCP). A variação de comportamento deve ser disparada por dispatch polimórfico dinâmico. |
+| **Proibido lançar Exceções Genéricas** | Proibido o uso de `throw new Exception()` ou `throw new RuntimeException()`. | Toda condição excepcional de negócio deve possuir sua classe de exceção personalizada, contendo a mensagem canônica exata requerida pelo EasyAccept. |
+| **Princípio DRY (Don't Repeat Yourself)** | Proibido repetir blocos de código redundantes. | Lógicas de validação de datas, strings nulas/vazias e cálculos recorrentes devem ser extraídas para utilitários ou métodos abstratos comuns. |
+| **Herança Semântica Correta** | Subclasses devem realmente estender características conceituais da superclasse. | Evita subclasses impuras ou herança por conveniência; assegura o cumprimento do princípio de Liskov (LSP). |
+| **Foco em Polimorfismo** | Delegação de comportamentos variantes aos próprios objetos responsáveis. | Substitui estruturas de decisão em cascata (`switch/case`, `if/else` encadeados sobre tipos de empregados). |
 
 ---
 
@@ -221,6 +221,6 @@ java -cp "lib/easyaccept.jar;out;." Main
 
 ## 9. Autoria
 
-Desenvolvido por **Anna Gomes** ([@nanameetscode](https://github.com/nanameetscode)).
+Desenvolvido por **Anna Beatriz Bernado Gomes** ([@nanameetscode](https://github.com/nanameetscode)).
 
 Instituto de Computação (IC) — **Universidade Federal de Alagoas (UFAL)**.

@@ -65,6 +65,14 @@ public abstract class Empregado {
         throw new EmpregadoNaoEhHoristaException();
     }
 
+    public void lancarVenda(String data, double valor) throws br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException {
+        throw new br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException();
+    }
+
+    public double getVendasRealizadas(LocalDate inicio, LocalDate fim) throws br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException {
+        throw new br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException();
+    }
+
     public String getValorAtributo(String atributo) throws AtributoNaoExisteException {
         String valor = getAtributos().get(atributo);
         if (valor == null) {

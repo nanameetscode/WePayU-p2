@@ -50,6 +50,36 @@ public class EmpregadoComissionado extends Empregado {
         return atributos;
     }
 
+    private final java.util.List<ResultadoVenda> vendas = new java.util.ArrayList<>();
+
+    public java.util.List<ResultadoVenda> getVendas() {
+        return vendas;
+    }
+
+    public void setVendas(java.util.List<ResultadoVenda> novasVendas) {
+        this.vendas.clear();
+        if (novasVendas != null) {
+            this.vendas.addAll(novasVendas);
+        }
+    }
+
+    @Override
+    public void lancarVenda(String data, double valor) {
+        vendas.add(new ResultadoVenda(data, valor));
+    }
+
+    @Override
+    public double getVendasRealizadas(java.time.LocalDate inicio, java.time.LocalDate fim) {
+        double total = 0.0;
+        for (ResultadoVenda v : vendas) {
+            java.time.LocalDate dataVenda = Formatador.converterData(v.getData());
+            if (dataVenda != null && !dataVenda.isBefore(inicio) && dataVenda.isBefore(fim)) {
+                total += v.getValor();
+            }
+        }
+        return total;
+    }
+
     public double getSalarioMensal() {
         return salarioMensal;
     }

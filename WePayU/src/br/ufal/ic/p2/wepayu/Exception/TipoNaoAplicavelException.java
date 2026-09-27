@@ -5,6 +5,8 @@ package br.ufal.ic.p2.wepayu.Exception;
  * não são compatíveis (ex: comissão para horista, ou comissionado sem comissão)
  */
 public class TipoNaoAplicavelException extends Exception {
+    private static final long serialVersionUID = 1L;
+
     public TipoNaoAplicavelException() {
         super("Tipo nao aplicavel.");
     }

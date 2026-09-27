@@ -17,8 +17,8 @@ import java.util.Map;
  */
 public class EmpregadoComissionado extends Empregado {
 
-    private final double salarioMensal;
-    private final double taxaDeComissao;
+    private double salarioMensal;
+    private double taxaDeComissao;
 
     /**
      * @param nome            nome do empregado
@@ -44,23 +44,56 @@ public class EmpregadoComissionado extends Empregado {
     }
 
     @Override
+    public void setSalario(double salario) {
+        this.salarioMensal = salario;
+    }
+
+    @Override
+    public void setComissao(double comissao) {
+        this.taxaDeComissao = comissao;
+    }
+
+    @Override
+    public String getComissaoFormatada() {
+        return Formatador.formatarMoeda(taxaDeComissao);
+    }
+
+    @Override
+    public void verificarComissionado() {
+        // Sucesso: este empregado é comissionado.
+    }
+
+    @Override
     public Map<String, String> getAtributos() {
         Map<String, String> atributos = super.getAtributos();
         atributos.put("comissao", Formatador.formatarMoeda(taxaDeComissao));
         return atributos;
     }
 
-    private final java.util.List<ResultadoVenda> vendas = new java.util.ArrayList<>();
+    public double getSalarioMensal() {
+        return salarioMensal;
+    }
+
+    public void setSalarioMensal(double salarioMensal) {
+        this.salarioMensal = salarioMensal;
+    }
+
+    public double getTaxaDeComissao() {
+        return taxaDeComissao;
+    }
+
+    public void setTaxaDeComissao(double taxaDeComissao) {
+        this.taxaDeComissao = taxaDeComissao;
+    }
+
+    private java.util.List<ResultadoVenda> vendas = new java.util.ArrayList<>();
 
     public java.util.List<ResultadoVenda> getVendas() {
         return vendas;
     }
 
-    public void setVendas(java.util.List<ResultadoVenda> novasVendas) {
-        this.vendas.clear();
-        if (novasVendas != null) {
-            this.vendas.addAll(novasVendas);
-        }
+    public void setVendas(java.util.List<ResultadoVenda> vendas) {
+        this.vendas = vendas != null ? vendas : new java.util.ArrayList<>();
     }
 
     @Override
@@ -70,21 +103,24 @@ public class EmpregadoComissionado extends Empregado {
 
     @Override
     public double getVendasRealizadas(java.time.LocalDate inicio, java.time.LocalDate fim) {
-        double total = 0.0;
-        for (ResultadoVenda v : vendas) {
-            java.time.LocalDate dataVenda = Formatador.converterData(v.getData());
+        double total = 0;
+        for (ResultadoVenda venda : vendas) {
+            java.time.LocalDate dataVenda = Formatador.converterData(venda.getData());
             if (dataVenda != null && !dataVenda.isBefore(inicio) && dataVenda.isBefore(fim)) {
-                total += v.getValor();
+                total += venda.getValor();
             }
         }
         return total;
     }
 
-    public double getSalarioMensal() {
-        return salarioMensal;
-    }
-
-    public double getTaxaDeComissao() {
-        return taxaDeComissao;
+    @Override
+    public Empregado clonar() {
+        EmpregadoComissionado clone = new EmpregadoComissionado(getNome(), getEndereco(), salarioMensal, taxaDeComissao);
+        copiarDadosBase(clone);
+        clone.vendas = new java.util.ArrayList<>();
+        for (ResultadoVenda rv : this.vendas) {
+            clone.vendas.add(new ResultadoVenda(rv.getData(), rv.getValor()));
+        }
+        return clone;
     }
 }

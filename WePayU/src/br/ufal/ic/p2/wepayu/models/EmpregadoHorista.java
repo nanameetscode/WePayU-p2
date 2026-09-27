@@ -9,12 +9,22 @@ import java.util.List;
 
 /**
  * Empregado que recebe por hora trabalhada.
+ *
+ * <p>O que caracteriza o horista não é um "salário" maior ou menor, mas o fato de
+ * o valor informado ser a <strong>remuneração de uma hora</strong>. Por isso o
+ * atributo chama-se {@code salarioPorHora} e não apenas "salário": o nome evita
+ * que a herança esconda o conceito que distingue este tipo dos demais.
  */
 public class EmpregadoHorista extends Empregado {
 
-    private final double salarioPorHora;
+    private double salarioPorHora;
     private List<CartaoDePonto> cartoes = new ArrayList<>();
 
+    /**
+     * @param nome           nome do empregado
+     * @param endereco       endereço do empregado
+     * @param salarioPorHora remuneração de uma hora trabalhada
+     */
     @ConstructorProperties({"nome", "endereco", "salarioPorHora"})
     public EmpregadoHorista(String nome, String endereco, double salarioPorHora) {
         super(nome, endereco);
@@ -31,8 +41,17 @@ public class EmpregadoHorista extends Empregado {
         return salarioPorHora;
     }
 
+    @Override
+    public void setSalario(double salario) {
+        this.salarioPorHora = salario;
+    }
+
     public double getSalarioPorHora() {
         return salarioPorHora;
+    }
+
+    public void setSalarioPorHora(double salarioPorHora) {
+        this.salarioPorHora = salarioPorHora;
     }
 
     public List<CartaoDePonto> getCartoes() {
@@ -70,5 +89,16 @@ public class EmpregadoHorista extends Empregado {
             }
         }
         return total;
+    }
+
+    @Override
+    public Empregado clonar() {
+        EmpregadoHorista clone = new EmpregadoHorista(getNome(), getEndereco(), salarioPorHora);
+        copiarDadosBase(clone);
+        clone.cartoes = new ArrayList<>();
+        for (CartaoDePonto cp : this.cartoes) {
+            clone.cartoes.add(new CartaoDePonto(cp.getData(), cp.getHoras()));
+        }
+        return clone;
     }
 }

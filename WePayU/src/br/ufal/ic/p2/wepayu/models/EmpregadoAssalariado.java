@@ -11,7 +11,7 @@ import java.beans.ConstructorProperties;
  */
 public class EmpregadoAssalariado extends Empregado {
 
-    private final double salario;
+    private double salario;
 
     /**
      * @param nome     nome do empregado
@@ -32,5 +32,17 @@ public class EmpregadoAssalariado extends Empregado {
     @Override
     public double getSalario() {
         return salario;
+    }
+
+    @Override
+    public void setSalario(double salario) {
+        this.salario = salario;
+    }
+
+    @Override
+    public Empregado clonar() {
+        EmpregadoAssalariado clone = new EmpregadoAssalariado(getNome(), getEndereco(), salario);
+        copiarDadosBase(clone);
+        return clone;
     }
 }

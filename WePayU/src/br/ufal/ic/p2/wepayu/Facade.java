@@ -1,14 +1,19 @@
 package br.ufal.ic.p2.wepayu;
 
+import br.ufal.ic.p2.wepayu.Exception.AgenciaNulaException;
 import br.ufal.ic.p2.wepayu.Exception.AtributoNaoExisteException;
+import br.ufal.ic.p2.wepayu.Exception.BancoNuloException;
 import br.ufal.ic.p2.wepayu.Exception.ComissaoNaoNumericaException;
 import br.ufal.ic.p2.wepayu.Exception.ComissaoNegativaException;
 import br.ufal.ic.p2.wepayu.Exception.ComissaoNulaException;
+import br.ufal.ic.p2.wepayu.Exception.ContaCorrenteNulaException;
 import br.ufal.ic.p2.wepayu.Exception.DataFinalInvalidaException;
 import br.ufal.ic.p2.wepayu.Exception.DataInicialInvalidaException;
 import br.ufal.ic.p2.wepayu.Exception.DataInicialPosteriorDataFinalException;
 import br.ufal.ic.p2.wepayu.Exception.DataInvalidaException;
 import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhHoristaException;
+import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoRecebeEmBancoException;
+import br.ufal.ic.p2.wepayu.Exception.MetodoPagamentoInvalidoException;
 import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoExisteException;
 import br.ufal.ic.p2.wepayu.Exception.EnderecoNuloException;
 import br.ufal.ic.p2.wepayu.Exception.HorasDevemSerPositivasException;
@@ -71,7 +76,8 @@ public class Facade {
 
     public String getAtributoEmpregado(String emp, String atributo)
             throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
-            AtributoNaoExisteException {
+            AtributoNaoExisteException, EmpregadoNaoEhSindicalizadoException,
+            EmpregadoNaoEhComissionadoException, EmpregadoNaoRecebeEmBancoException {
 
         return empregados.getAtributoEmpregado(emp, atributo);
     }
@@ -133,16 +139,36 @@ public class Facade {
 
     public void alteraEmpregado(String emp, String atributo, String valor)
             throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
-            AtributoNaoExisteException, ValorTrueFalseException, IdentificacaoSindicatoNulaException {
+            AtributoNaoExisteException, NomeNuloException, EnderecoNuloException,
+            TipoInvalidoException, SalarioNuloException, SalarioNaoNumericoException,
+            SalarioNegativoException, ComissaoNulaException, ComissaoNaoNumericaException,
+            ComissaoNegativaException, EmpregadoNaoEhComissionadoException,
+            MetodoPagamentoInvalidoException, ValorTrueFalseException,
+            IdentificacaoSindicatoNulaException {
         empregados.alteraEmpregado(emp, atributo, valor);
+    }
+
+    public void alteraEmpregado(String emp, String atributo, String valor, String salOuComissao)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            AtributoNaoExisteException, TipoInvalidoException, ComissaoNulaException,
+            ComissaoNaoNumericaException, ComissaoNegativaException, SalarioNuloException,
+            SalarioNaoNumericoException, SalarioNegativoException {
+        empregados.alteraEmpregado(emp, atributo, valor, salOuComissao);
     }
 
     public void alteraEmpregado(String emp, String atributo, String valor, String idSindicato, String taxaSindical)
             throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
-            AtributoNaoExisteException, ValorTrueFalseException,
-            IdentificacaoSindicatoNulaException, IdentificacaoSindicatoDuplicadaException,
-            TaxaSindicalNulaException, TaxaSindicalNaoNumericaException, TaxaSindicalNegativaException {
+            AtributoNaoExisteException, ValorTrueFalseException, IdentificacaoSindicatoNulaException,
+            IdentificacaoSindicatoDuplicadaException, TaxaSindicalNulaException,
+            TaxaSindicalNaoNumericaException, TaxaSindicalNegativaException {
         empregados.alteraEmpregado(emp, atributo, valor, idSindicato, taxaSindical);
+    }
+
+    public void alteraEmpregado(String emp, String atributo, String valor, String banco, String agencia, String contaCorrente)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            AtributoNaoExisteException, MetodoPagamentoInvalidoException,
+            BancoNuloException, AgenciaNulaException, ContaCorrenteNulaException {
+        empregados.alteraEmpregado(emp, atributo, valor, banco, agencia, contaCorrente);
     }
 
     public void zerarSistema() throws IOException {

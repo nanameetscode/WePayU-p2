@@ -162,7 +162,7 @@ O desenvolvimento é incremental, dividido em iterações avaliativas:
 - [x] **US3**: Lançamento de Cartão de Ponto (horas normais e horas extras a 1.5x)
 - [x] **US4**: Lançamento de Resultado de Vendas (comissões)
 - [x] **US5**: Lançamento de Taxa de Serviço Sindical
-- [ ] **US6**: Alteração de Detalhes do Empregado (dados cadastrais, filiação ao sindicato, método de pagamento)
+- [x] **US6**: Alteração de Detalhes do Empregado (dados cadastrais, filiação ao sindicato, método de pagamento)
 - [ ] **US7**: Rodar a Folha de Pagamento para o dia indicado
 - [ ] **US8**: Sistema de Transações Undo/Redo
 

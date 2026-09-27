@@ -147,6 +147,19 @@ public class EmpregadoService {
     }
 
     /**
+     * Remove um empregado do sistema pela sua identificação.
+     *
+     * @param emp identificação do empregado a remover
+     * @throws IdentificacaoEmpregadoNulaException se a identificação for nula ou vazia
+     * @throws EmpregadoNaoExisteException         se o empregado não for encontrado
+     */
+    public void removerEmpregado(String emp)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException {
+        buscar(emp);
+        empregados.remove(emp);
+    }
+
+    /**
      * Remove todos os empregados cadastrados, reiniciando a numeração.
      */
     public void zerarSistema() {

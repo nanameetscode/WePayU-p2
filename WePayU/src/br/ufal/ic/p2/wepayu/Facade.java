@@ -111,6 +111,16 @@ public class Facade {
     }
 
     /**
+     * Remove um empregado do sistema pela sua identificação.
+     *
+     * @param emp identificação do empregado a remover
+     */
+    public void removerEmpregado(String emp)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException {
+        empregados.removerEmpregado(emp);
+    }
+
+    /**
      * Descarta o cadastro atual e apaga o arquivo de persistência.
      */
     public void zerarSistema() throws IOException {

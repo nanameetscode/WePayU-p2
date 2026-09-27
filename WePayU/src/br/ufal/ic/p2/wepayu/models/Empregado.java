@@ -16,6 +16,9 @@ public abstract class Empregado {
     private final String nome;
     private final String endereco;
     private boolean sindicalizado;
+    private String idSindicato;
+    private double taxaSindical;
+    private java.util.List<TaxaServico> taxasServico = new java.util.ArrayList<>();
 
     protected Empregado(String nome, String endereco) {
         this.nome = nome;
@@ -73,7 +76,67 @@ public abstract class Empregado {
         throw new br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException();
     }
 
-    public String getValorAtributo(String atributo) throws AtributoNaoExisteException {
+    public String getIdSindicato() {
+        return idSindicato;
+    }
+
+    public void setIdSindicato(String idSindicato) {
+        this.idSindicato = idSindicato;
+    }
+
+    public double getTaxaSindical() {
+        return taxaSindical;
+    }
+
+    public void setTaxaSindical(double taxaSindical) {
+        this.taxaSindical = taxaSindical;
+    }
+
+    public java.util.List<TaxaServico> getTaxasServico() {
+        return taxasServico;
+    }
+
+    public void setTaxasServico(java.util.List<TaxaServico> taxasServico) {
+        this.taxasServico = taxasServico != null ? taxasServico : new java.util.ArrayList<>();
+    }
+
+    public void setDadosSindicato(boolean sindicalizado, String idSindicato, double taxaSindical) {
+        this.sindicalizado = sindicalizado;
+        this.idSindicato = sindicalizado ? idSindicato : null;
+        this.taxaSindical = sindicalizado ? taxaSindical : 0.0;
+        if (!sindicalizado) {
+            this.taxasServico.clear();
+        }
+    }
+
+    public void lancarTaxaServico(String data, double valor) {
+        taxasServico.add(new TaxaServico(data, valor));
+    }
+
+    public double getTaxasServico(LocalDate inicio, LocalDate fim) throws br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhSindicalizadoException {
+        if (!sindicalizado) {
+            throw new br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhSindicalizadoException();
+        }
+        double total = 0;
+        for (TaxaServico taxa : taxasServico) {
+            LocalDate dataTaxa = Formatador.converterData(taxa.getData());
+            if (dataTaxa != null && !dataTaxa.isBefore(inicio) && dataTaxa.isBefore(fim)) {
+                total += taxa.getValor();
+            }
+        }
+        return total;
+    }
+
+    public String getValorAtributo(String atributo) throws AtributoNaoExisteException, br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhSindicalizadoException {
+        if ("idSindicato".equals(atributo) || "taxaSindical".equals(atributo)) {
+            if (!isSindicalizado()) {
+                throw new br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhSindicalizadoException();
+            }
+            if ("idSindicato".equals(atributo)) {
+                return idSindicato;
+            }
+            return Formatador.formatarMoeda(taxaSindical);
+        }
         String valor = getAtributos().get(atributo);
         if (valor == null) {
             throw new AtributoNaoExisteException();

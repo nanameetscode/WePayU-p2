@@ -49,33 +49,32 @@ flowchart TD
     end
 
     subgraph Business_Layer ["Camada de Negócio e Serviços"]
-        EmpServ["EmpregadoService"]
-        PontoServ["PontoService"]
-        VendaServ["VendaService"]
-        SindicatoServ["SindicatoService"]
-        FolhaServ["FolhaService"]
-        CommandMgr["CommandManager (Undo / Redo)"]
+        EmpServ["EmpregadoService (US1)"]
+        PontoServ["PontoService (US3) - a implementar"]
+        VendaServ["VendaService (US4) - a implementar"]
+        SindicatoServ["SindicatoService (US5) - a implementar"]
+        FolhaServ["FolhaService (US7) - a implementar"]
+        CommandMgr["CommandManager Undo/Redo (US8) - a implementar"]
     end
 
     subgraph Domain_Layer ["Camada de Domínio e Polimorfismo"]
         direction TB
-        E["Empregado (Abstrato)"]
-        EH["EmpregadoHorista"]
-        EA_Model["EmpregadoAssalariado"]
-        EC["EmpregadoComissionado"]
+        SF["SistemaFolha (US7) - a implementar"]
 
-        MP["MetodoPagamento (Interface)"]
-        MP_B["DepositoBanco"]
-        MP_M["EmMaos"]
-        MP_C["Correios"]
+        E["Empregado - abstrata (US1)<br/>- nome, - endereco, - sindicalizado"]
+        EH["EmpregadoHorista (US1)<br/>- salarioPorHora"]
+        EAssal["EmpregadoAssalariado (US1)<br/>- salario"]
+        EC["EmpregadoComissionado (US1)<br/>- salarioMensal, - taxaDeComissao"]
 
-        E --> EH
-        E --> EA_Model
-        E --> EC
-        E --> MP
-        MP -.-> MP_B
-        MP -.-> MP_M
-        MP -.-> MP_C
+        CDP["CartaoDePonto (US3) - a implementar<br/>- data, - horas"]
+        RV["ResultadoVenda (US4) - a implementar<br/>- data, - valor"]
+        MS["MembroSindicato (US5) - a implementar<br/>- idMembro, - taxaSindical"]
+        TS["TaxaServico (US5) - a implementar<br/>- data, - valor"]
+
+        MP["MetodoPagamento - interface (US6) - a implementar"]
+        MP_M["EmMaos (US6) - a implementar"]
+        MP_B["Banco (US6) - a implementar"]
+        MP_C["Correios (US6) - a implementar"]
     end
 
     subgraph Persistence_Layer ["Camada de Persistência"]
@@ -84,14 +83,26 @@ flowchart TD
 
     EA --> F
     F --> EmpServ
-    F --> PontoServ
-    F --> VendaServ
-    F --> SindicatoServ
-    F --> FolhaServ
-    F --> CommandMgr
-    EmpServ --> Domain_Layer
-    PontoServ --> Domain_Layer
-    FolhaServ --> Domain_Layer
+    F -.-> PontoServ
+    F -.-> VendaServ
+    F -.-> SindicatoServ
+    F -.-> FolhaServ
+    F -.-> CommandMgr
+
+    SF -.-> EmpServ
+    EmpServ --> E
+    E --> EH
+    E --> EAssal
+    E --> EC
+    EH --> CDP
+    EC --> RV
+    E ---|"0..1"| MS
+    MS --> TS
+    E ---|"1"| MP
+    MP --> MP_M
+    MP --> MP_B
+    MP --> MP_C
+
     EmpServ --> Repo
 ```
 
@@ -182,40 +193,48 @@ O projeto adota a convenção padronizada de mensagens de commit baseada no [Con
 [corpo opcional detalhando a motivação da alteração]
 ```
 
-### Tipos Permitidos e Exemplos:
+### Diretriz de Commits Atômicos (Modulares)
 
-| Tipo | Finalidade | Exemplo no Domínio WePayU |
-|---|---|---|
-| `feat` | Nova funcionalidade para o sistema | `feat(us1): implementa cadastro de empregados horistas` |
-| `test` | Adição ou execução de scripts de teste | `test(us3): adiciona validacao de horas extras no cartao de ponto` |
-| `fix` | Correção de defeito ou falha em teste de aceitação | `fix(folha): corrige calculo do desconto de taxa sindical` |
-| `refactor` | Refatoração de código sem alteração no comportamento externo | `refactor(models): extrai calculo salarial para Strategy polimorfico` |
-| `docs` | Alterações em arquivos de documentação | `docs(readme): atualiza diagrama arquitetural e regras da disciplina` |
-| `chore` | Tarefas auxiliares, ferramentas ou configurações de build | `chore(gitignore): ajusta regras para saidas de compilacao do IntelliJ` |
+Para manter o histórico do Git limpo, rastreável e facilitar o *code review*, o projeto adota **commits atômicos e granulares por camada**. Cada commit deve conter apenas arquivos de uma responsabilidade específica:
+
+- `feat(exceptions)`: Exceções personalizadas de negócio da User Story.
+- `feat(models)`: Modelos conceituais e polimórficos de domínio.
+- `feat(utils)`: Formatadores e utilitários auxiliares.
+- `feat(persistence)`: Mecanismos de gravação e restauração em disco (XML).
+- `feat(services)`: Serviços de orquestração de negócio e fábricas (Factory Method).
+- `feat(facade)`: Exposição de métodos públicos na Façade para o EasyAccept.
+- `docs(...)`: Documentações e diagramas arquiteturais.
 
 ---
 
-## 8. Como Executar os Testes
+## 8. Como Executar os Testes e Validação de Qualidade
 
-O projeto utiliza o framework **EasyAccept** (presente no diretório [`WePayU/lib/easyaccept.jar`](WePayU/lib/easyaccept.jar)).
+O projeto utiliza o framework **EasyAccept** (presente no diretório [`WePayU/lib/easyaccept.jar`](WePayU/lib/easyaccept.jar)) para testes de aceitação e a própria ferramenta de análise estática do compilador Java para garantia de qualidade de código.
 
-### Execução via IntelliJ IDEA:
+### 8.1 Verificação de Qualidade e Linter (Compilação Estrita)
+Para assegurar a conformidade com as regras de Clean Code (sem advertências de serialização, casts inseguros, tipos brutos ou recursos não fechados), o código-fonte é validado pelo analisador estático do Java com a flag `-Xlint:all`:
+
+```powershell
+# Na pasta WePayU, executando o linter estrito:
+javac -Xlint:all -cp "lib/easyaccept.jar;src" -d out (Get-ChildItem -Path "src" -Filter "*.java" -Recurse | Select-Object -ExpandProperty FullName)
+```
+> **Critério de Aceitação de Código**: Compilação limpa com **0 erros e 0 warnings**.
+
+### 8.2 Execução dos Testes EasyAccept via Linha de Comando
+Na pasta [`WePayU`](WePayU/):
+
+```powershell
+# Executando a suite da US1:
+java -cp "lib/easyaccept.jar;out;." Main us1 us1_1
+```
+
+### 8.3 Execução via IntelliJ IDEA
 1. Abra o projeto pela pasta [`WePayU`](WePayU/).
 2. Certifique-se de que a biblioteca `easyaccept.jar` está configurada como dependência do módulo.
 3. Abra a classe [`WePayU/src/Main.java`](WePayU/src/Main.java).
 4. Descomente a linha do script de teste que deseja executar (ex.: `EasyAccept.main(new String[]{facade, "tests/us1.txt"});`).
 5. Execute o método `main`.
 
-### Execução via Linha de Comando:
-Na pasta [`WePayU`](WePayU/):
-
-```powershell
-# Compilando os arquivos-fonte:
-javac -cp "lib/easyaccept.jar;." -d out src/br/ufal/ic/p2/wepayu/**/*.java src/br/ufal/ic/p2/wepayu/*.java src/Main.java
-
-# Executando os testes da US1:
-java -cp "lib/easyaccept.jar;out;." Main
-```
 
 ---
 

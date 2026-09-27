@@ -18,8 +18,10 @@ import br.ufal.ic.p2.wepayu.Exception.NomeNuloException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNaoNumericoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNegativoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNuloException;
+import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException;
 import br.ufal.ic.p2.wepayu.Exception.TipoInvalidoException;
 import br.ufal.ic.p2.wepayu.Exception.TipoNaoAplicavelException;
+import br.ufal.ic.p2.wepayu.Exception.ValorDeveSerPositivoException;
 import br.ufal.ic.p2.wepayu.models.Empregado;
 import br.ufal.ic.p2.wepayu.persistence.RepositorioXML;
 import br.ufal.ic.p2.wepayu.services.EmpregadoService;
@@ -92,6 +94,19 @@ public class Facade {
             EmpregadoNaoEhHoristaException, DataInicialInvalidaException, DataFinalInvalidaException,
             DataInicialPosteriorDataFinalException {
         return empregados.getHorasExtrasTrabalhadas(emp, dataInicial, dataFinal);
+    }
+
+    public void lancaVenda(String emp, String data, String valor)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhComissionadoException, DataInvalidaException, ValorDeveSerPositivoException {
+        empregados.lancaVenda(emp, data, valor);
+    }
+
+    public String getVendasRealizadas(String emp, String dataInicial, String dataFinal)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhComissionadoException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosteriorDataFinalException {
+        return empregados.getVendasRealizadas(emp, dataInicial, dataFinal);
     }
 
     public void zerarSistema() throws IOException {

@@ -18,8 +18,10 @@ import br.ufal.ic.p2.wepayu.Exception.NomeNuloException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNaoNumericoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNegativoException;
 import br.ufal.ic.p2.wepayu.Exception.SalarioNuloException;
+import br.ufal.ic.p2.wepayu.Exception.EmpregadoNaoEhComissionadoException;
 import br.ufal.ic.p2.wepayu.Exception.TipoInvalidoException;
 import br.ufal.ic.p2.wepayu.Exception.TipoNaoAplicavelException;
+import br.ufal.ic.p2.wepayu.Exception.ValorDeveSerPositivoException;
 import br.ufal.ic.p2.wepayu.models.Empregado;
 import br.ufal.ic.p2.wepayu.models.TipoEmpregado;
 import br.ufal.ic.p2.wepayu.utils.Formatador;
@@ -164,6 +166,36 @@ public class EmpregadoService {
             throw new DataInicialPosteriorDataFinalException();
         }
         return new LocalDate[]{inicio, fim};
+    }
+
+    public void lancaVenda(String emp, String data, String valor)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhComissionadoException, DataInvalidaException, ValorDeveSerPositivoException {
+
+        Empregado empregado = buscar(emp);
+
+        LocalDate dataConvertida = Formatador.converterData(data);
+        if (dataConvertida == null) {
+            throw new DataInvalidaException();
+        }
+
+        Double valorConvertido = Formatador.converterNumero(valor);
+        if (valorConvertido == null || valorConvertido <= 0) {
+            throw new ValorDeveSerPositivoException();
+        }
+
+        empregado.lancarVenda(data, valorConvertido);
+    }
+
+    public String getVendasRealizadas(String emp, String dataInicial, String dataFinal)
+            throws IdentificacaoEmpregadoNulaException, EmpregadoNaoExisteException,
+            EmpregadoNaoEhComissionadoException, DataInicialInvalidaException, DataFinalInvalidaException,
+            DataInicialPosteriorDataFinalException {
+
+        Empregado empregado = buscar(emp);
+        LocalDate[] periodo = validarPeriodo(dataInicial, dataFinal);
+        double total = empregado.getVendasRealizadas(periodo[0], periodo[1]);
+        return Formatador.formatarMoeda(total);
     }
 
     public void zerarSistema() {

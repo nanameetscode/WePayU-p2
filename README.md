@@ -163,7 +163,7 @@ O desenvolvimento é incremental, dividido em iterações avaliativas:
 - [x] **US4**: Lançamento de Resultado de Vendas (comissões)
 - [x] **US5**: Lançamento de Taxa de Serviço Sindical
 - [x] **US6**: Alteração de Detalhes do Empregado (dados cadastrais, filiação ao sindicato, método de pagamento)
-- [ ] **US7**: Rodar a Folha de Pagamento para o dia indicado
+- [x] **US7**: Rodar a Folha de Pagamento para o dia indicado
 - [ ] **US8**: Sistema de Transações Undo/Redo
 
 ### Milestone 2 (User Stories 9 e 10)

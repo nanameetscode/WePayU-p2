@@ -39,6 +39,7 @@ import br.ufal.ic.p2.wepayu.Exception.ValorTrueFalseException;
 import br.ufal.ic.p2.wepayu.models.Empregado;
 import br.ufal.ic.p2.wepayu.persistence.RepositorioXML;
 import br.ufal.ic.p2.wepayu.services.EmpregadoService;
+import br.ufal.ic.p2.wepayu.services.FolhaService;
 
 import java.io.IOException;
 
@@ -49,11 +50,13 @@ public class Facade {
 
     private final RepositorioXML repositorio = new RepositorioXML();
     private final EmpregadoService empregados = new EmpregadoService();
+    private final FolhaService folhaService;
 
     public Facade() {
         repositorio.carregar();
         empregados.getEmpregados().putAll(repositorio.getEmpregados());
         empregados.restaurarUltimoId(maiorIdentificacao());
+        this.folhaService = new FolhaService(this.empregados);
     }
 
     public String criarEmpregado(String nome, String endereco, String tipo, String salario)
@@ -169,6 +172,14 @@ public class Facade {
             AtributoNaoExisteException, MetodoPagamentoInvalidoException,
             BancoNuloException, AgenciaNulaException, ContaCorrenteNulaException {
         empregados.alteraEmpregado(emp, atributo, valor, banco, agencia, contaCorrente);
+    }
+
+    public String totalFolha(String data) throws DataInvalidaException {
+        return folhaService.totalFolha(data);
+    }
+
+    public void rodaFolha(String data, String saida) throws DataInvalidaException, IOException {
+        folhaService.rodaFolha(data, saida);
     }
 
     public void zerarSistema() throws IOException {

@@ -1,0 +1,7 @@
+REGRAS PASSADAS PELOS MONITORES
+
+- nunca criar uma excessão genérica, sempre tem que criar uma exceção personalizada
+- instanteof não pode 
+- evitar repetir blocos de código 
+- fazer a herança certo, com as classes filhas herdando as características do pai 
+- usar o máximo de polimorfismo

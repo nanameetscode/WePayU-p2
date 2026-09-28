@@ -49,32 +49,30 @@ flowchart TD
     end
 
     subgraph Business_Layer ["Camada de Negócio e Serviços"]
-        EmpServ["EmpregadoService (US1)"]
-        PontoServ["PontoService (US3) - a implementar"]
-        VendaServ["VendaService (US4) - a implementar"]
-        SindicatoServ["SindicatoService (US5) - a implementar"]
-        FolhaServ["FolhaService (US7) - a implementar"]
-        CommandMgr["CommandManager Undo/Redo (US8) - a implementar"]
+        EmpServ["EmpregadoService"]
+        FolhaServ["FolhaService"]
+        CommandMgr["CommandManager (Undo / Redo)"]
+        Fabrica["FabricaEmpregado (Factory Method)"]
     end
 
     subgraph Domain_Layer ["Camada de Domínio e Polimorfismo"]
         direction TB
-        SF["SistemaFolha (US7) - a implementar"]
 
-        E["Empregado - abstrata (US1)<br/>- nome, - endereco, - sindicalizado"]
-        EH["EmpregadoHorista (US1)<br/>- salarioPorHora"]
-        EAssal["EmpregadoAssalariado (US1)<br/>- salario"]
-        EC["EmpregadoComissionado (US1)<br/>- salarioMensal, - taxaDeComissao"]
+        E["Empregado (abstrata)<br/>- nome, endereco, sindicalizado, etc."]
+        EH["EmpregadoHorista<br/>- salarioPorHora"]
+        EAssal["EmpregadoAssalariado<br/>- salario"]
+        EC["EmpregadoComissionado<br/>- salarioMensal, taxaDeComissao"]
 
-        CDP["CartaoDePonto (US3) - a implementar<br/>- data, - horas"]
-        RV["ResultadoVenda (US4) - a implementar<br/>- data, - valor"]
-        MS["MembroSindicato (US5) - a implementar<br/>- idMembro, - taxaSindical"]
-        TS["TaxaServico (US5) - a implementar<br/>- data, - valor"]
+        CDP["CartaoDePonto<br/>- data, horas"]
+        RV["ResultadoVenda<br/>- data, valor"]
+        TS["TaxaServico<br/>- data, valor, cobrada"]
 
-        MP["MetodoPagamento - interface (US6) - a implementar"]
-        MP_M["EmMaos (US6) - a implementar"]
-        MP_B["Banco (US6) - a implementar"]
-        MP_C["Correios (US6) - a implementar"]
+        MP["MetodoPagamento (abstrata)"]
+        MP_M["MetodoEmMaos"]
+        MP_B["MetodoBanco"]
+        MP_C["MetodoCorreios"]
+
+        Snap["SistemaSnapshot (Memento)"]
     end
 
     subgraph Persistence_Layer ["Camada de Persistência"]
@@ -83,28 +81,32 @@ flowchart TD
 
     EA --> F
     F --> EmpServ
-    F -.-> PontoServ
-    F -.-> VendaServ
-    F -.-> SindicatoServ
-    F -.-> FolhaServ
-    F -.-> CommandMgr
+    F --> FolhaServ
+    F --> CommandMgr
+    F --> Repo
 
-    SF -.-> EmpServ
+    EmpServ --> Fabrica
+    Fabrica --> E
     EmpServ --> E
+    FolhaServ --> E
+    CommandMgr --> Snap
+
     E --> EH
     E --> EAssal
     E --> EC
+
     EH --> CDP
     EC --> RV
-    E ---|"0..1"| MS
-    MS --> TS
-    E ---|"1"| MP
+    E --> TS
+    E --> MP
     MP --> MP_M
     MP --> MP_B
     MP --> MP_C
-
-    EmpServ --> Repo
 ```
+
+> Documentação detalhada dos pacotes internos:
+> - **Modelos e Entidades de Domínio**: [`WePayU/src/br/ufal/ic/p2/wepayu/models/README.md`](WePayU/src/br/ufal/ic/p2/wepayu/models/README.md)
+> - **Serviços de Negócio e Transações**: [`WePayU/src/br/ufal/ic/p2/wepayu/services/README.md`](WePayU/src/br/ufal/ic/p2/wepayu/services/README.md)
 
 ### Padrões de Projeto Empregados:
 
@@ -112,13 +114,13 @@ flowchart TD
    - Implementado na classe [`br.ufal.ic.p2.wepayu.Facade`](WePayU/src/br/ufal/ic/p2/wepayu/Facade.java).
    - Centraliza e simplifica a invocação de todas as operações do sistema para o EasyAccept, orquestrando as chamadas aos serviços de negócio subjacentes sem expor as complexidades internas.
 2. **Strategy (Estratégia)**:
-   - **Métodos de Pagamento**: Interface `MetodoPagamento` com implementações polimórficas (`Correios`, `EmMaos`, `DepositoBanco`).
-   - **Cálculo Salarial e Vencimentos**: Cada tipo de empregado (`Horista`, `Assalariado`, `Comissionado`) implementa seu próprio cálculo de proventos e horas extras.
+   - **Métodos de Pagamento**: Classe abstrata [`MetodoPagamento`](WePayU/src/br/ufal/ic/p2/wepayu/models/MetodoPagamento.java) com especializações polimórficas ([`MetodoCorreios`](WePayU/src/br/ufal/ic/p2/wepayu/models/MetodoCorreios.java), [`MetodoEmMaos`](WePayU/src/br/ufal/ic/p2/wepayu/models/MetodoEmMaos.java), [`MetodoBanco`](WePayU/src/br/ufal/ic/p2/wepayu/models/MetodoBanco.java)).
+   - **Cálculo Salarial e Vencimentos**: Cada subtipo de empregado ([`EmpregadoHorista`](WePayU/src/br/ufal/ic/p2/wepayu/models/EmpregadoHorista.java), [`EmpregadoAssalariado`](WePayU/src/br/ufal/ic/p2/wepayu/models/EmpregadoAssalariado.java), [`EmpregadoComissionado`](WePayU/src/br/ufal/ic/p2/wepayu/models/EmpregadoComissionado.java)) implementa seu próprio cálculo de proventos, horas extras e comissões.
 3. **Command & Memento (Comandos e Transações)**:
-   - Aplicado para suportar a **User Story 8 (Undo/Redo)**.
-   - Cada operação mutável (US 1 a US 7) é encapsulada em um objeto comando reversível, mantendo uma pilha histórica de execução e permitindo desfazer (`undo`) e refazer (`redo`) alterações no estado do sistema.
+   - Aplicado para suportar a **User Story 8 (Undo/Redo)** através do [`CommandManager`](WePayU/src/br/ufal/ic/p2/wepayu/services/CommandManager.java) e do [`SistemaSnapshot`](WePayU/src/br/ufal/ic/p2/wepayu/models/SistemaSnapshot.java).
+   - Cada operação mutável (US1 a US7) tem seus estados prévio e posterior capturados via snapshots profundos, mantendo pilhas de histórico que possibilitam desfazer (`undo`) e refazer (`redo`) de maneira segura e isolada.
 4. **Factory Method (Fábrica)**:
-   - Criação desacoplada de instâncias de empregados, agendas e métodos de pagamento a partir dos parâmetros fornecidos pelos scripts.
+   - Implementado em [`FabricaEmpregado`](WePayU/src/br/ufal/ic/p2/wepayu/services/FabricaEmpregado.java) para a criação desacoplada das instâncias concretas de empregados.
 
 ---
 
@@ -164,7 +166,7 @@ O desenvolvimento é incremental, dividido em iterações avaliativas:
 - [x] **US5**: Lançamento de Taxa de Serviço Sindical
 - [x] **US6**: Alteração de Detalhes do Empregado (dados cadastrais, filiação ao sindicato, método de pagamento)
 - [x] **US7**: Rodar a Folha de Pagamento para o dia indicado
-- [ ] **US8**: Sistema de Transações Undo/Redo
+- [x] **US8**: Sistema de Transações Undo/Redo
 
 ### Milestone 2 (User Stories 9 e 10)
 - [ ] **US9**: Agendas de Pagamento padrão (`semanalmente`, `mensalmente`, `bi-semanalmente`)
@@ -224,8 +226,14 @@ javac -Xlint:all -cp "lib/easyaccept.jar;src" -d out (Get-ChildItem -Path "src" 
 Na pasta [`WePayU`](WePayU/):
 
 ```powershell
-# Executando a suite da US1:
-java -cp "lib/easyaccept.jar;out;." Main us1 us1_1
+# Executando um script de teste específico (ex.: us1):
+java -cp "out;lib\easyaccept.jar" easyaccept.EasyAccept br.ufal.ic.p2.wepayu.Facade tests/us1.txt
+
+# Executando toda a suíte de testes da Milestone 1 (US1 a US8):
+$tests = @('us1','us1_1','us2','us2_1','us3','us3_1','us4','us4_1','us5','us5_1','us6','us6_1','us7','us8')
+foreach ($t in $tests) {
+    java -cp "out;lib\easyaccept.jar" easyaccept.EasyAccept br.ufal.ic.p2.wepayu.Facade "tests/$t.txt"
+}
 ```
 
 ### 8.3 Execução via IntelliJ IDEA

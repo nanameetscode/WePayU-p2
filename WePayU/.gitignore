@@ -31,3 +31,11 @@ bin/
 
 # Runtime persistence data
 wepayu.xml
+
+### Arquivos de IDE (cada pessoa gera os seus) ###
+.idea/
+*.iml
+
+### Saidas geradas pelos testes ###
+folha-*.txt
+wepayu.xml.tmp
